@@ -3,7 +3,7 @@
 #
 # Upstream's server reads DUPLICATI__WEBSERVICE_PASSWORD at every start and SETTINGS_ENCRYPTION_KEY to encrypt the stored settings
 # (backup passphrases, destination credentials). This script makes both mandatory, refuses a short password, listens on Railway's
-# injected PORT, accepts any Host header (upstream answers sign-in 403 from a hostname outside its allowlist), and creates the two folders the web UI offers as defaults.
+# injected PORT, accepts any Host header (upstream answers sign-in 403 from a hostname outside its allowlist), and creates a local backup folder and a local source folder under the volume.
 set -u
 : "${PORT:=8080}"
 if [ -z "${DUPLICATI__WEBSERVICE_PASSWORD:-}" ]; then
@@ -22,5 +22,6 @@ export DUPLICATI__WEBSERVICE_PORT="$PORT"
 export DUPLICATI__WEBSERVICE_INTERFACE=any
 export DUPLICATI__WEBSERVICE_ALLOWED_HOSTNAMES="${DUPLICATI__WEBSERVICE_ALLOWED_HOSTNAMES:-*}"
 mkdir -p /data/backups /data/source
+[ -e /data/source/README.txt ] || echo "Put files here to back them up with a local source path of /data/source/" > /data/source/README.txt
 echo "[railway] Duplicati on :$PORT, settings encrypted, data under /data (database /data/Duplicati, local backups /data/backups)"
 exec /run-as-user.sh "$@"
